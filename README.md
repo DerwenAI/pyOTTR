@@ -45,34 +45,47 @@ Otherwise, everything else is done using classic OTTR syntax!
 By default, **all templates** from the [OTTR template library](http://tpl.ottr.xyz/) are loaded when the generator is created.
 
 ```python
-  from ottr import OttrGenerator
-  # An OttrGenerator is used to load templates and expand instances
-  generator = OttrGenerator()
+# an OttrGenerator is used to load templates and expand instances
 
-  # Load a simple OTTR template definition
-  generator.load_templates("""
-    @prefix ex: <http://example.org#>.
+import ottr
 
-    ex:FirstName [ottr:IRI ?uri, ?firstName] :: {
-      ottr:Triple (?uri, foaf:firstName, ?firstName )
-    } .
+template: str = """
+@prefix ex: <http://example.org#> .
 
-    ex:Person[ ?firstName ] :: {
-      ottr:Triple (_:person, rdf:type, foaf:Person ),
-      ex:FirstName (_:person, ?firstName)
-    } .
-  """)
+ex:FirstName [ ottr:IRI ?uri, ?firstName ] :: {
+  ottr:Triple ( ?uri, foaf:firstName, ?firstName )
+} .
 
-  # Parse and prepare an instance for execution
-  instances = generator.instanciate("""
-    @prefix ex: <http://example.org#>.
+ex:Person[ ?firstName ] :: {
+  ottr:Triple ( _:person, rdf:type, foaf:Person ),
+  ex:FirstName ( _:person, ?firstName )
+} .
+""".strip()
 
-    ex:Person("Ann").
-  """)
+# load a simple OTTR template definition
 
-  # Execute the instance, which yield RDF triples
-  # The following prints (_:person0, rdf:type, foaf:Person) and (_:person0, foaf:firstName, "Ann")
-  for s, p, o in instances.execute(as_nt=True):
+generator: ottr.OttrGenerator = ottr.OttrGenerator()
+generator.load_templates(template)
+
+# parse and prepare an instance for execution
+
+rdf_data: str = """
+@prefix ex: <http://example.org#> .
+
+ex:Person("Ann") .
+""".strip()
+
+instances: ottr.generator.OttrInstances = generator.instanciate(rdf_data)
+
+# execute the instance, which yield RDF triples
+# the following prints (_:person0, rdf:type, foaf:Person) and (_:person0, foaf:firstName, "Ann")
+
+for s, p, o in instances.execute(as_nt = True):
     print("# ----- RDF triple ----- #")
     print((s, p, o)
 ```
+
+
+## Addendum
+
+Updated for more recent releases of `RDFlib` by [Derwen](https://derwen.ai)
